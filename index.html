@@ -1408,6 +1408,8 @@ function buildRackRow(r) {
   for (let l = 1; l < LEVELS; l++) for (const s of [-0.6, 0.6]) bx(g, L, 0.12, 0.08, '#f07c1b', cx, l * 1.5, z + s, false);
   bx(g, L, 0.1, 0.08, '#f07c1b', cx, 4.55, z - 0.6, false); bx(g, L, 0.1, 0.08, '#f07c1b', cx, 4.55, z + 0.6, false);
   for (let b = 0; b <= BAYS; b += 2) bx(g, 0.06, 0.06, 1.2, '#1f4fd8', RACK_X0 + b * BAY_W, 3.0, z, false);
+  // side frames: zig-zag bracing between the front and back upright, like real pallet racking
+  for (let b = 0; b <= BAYS; b++) { const x = RACK_X0 + b * BAY_W; for (let k = 0; k < 4; k++) { const y0 = 0.25 + k * 1.05, m = bx(g, 0.04, Math.hypot(1.05, 1.1), 0.04, '#2a5fe0', x, y0 + 0.525, z, false); m.rotation.x = (k % 2 ? 1 : -1) * Math.atan2(1.1, 1.05); } bx(g, 0.04, 0.04, 1.2, '#2a5fe0', x, 0.25, z, false); }
   const sg = signPlane(['РЯД ' + (r + 1)], 1.8, 0.6, '#1f4fd8', '#ffffff', g, RACK_X0 - 0.2, 4.2, z + 0.66);
   const hit = new THREE.Mesh(boxG(L, 4.6, 1.3), new THREE.MeshBasicMaterial({ visible: false })); hit.position.set(cx, 2.3, z); g.add(hit);
   setPick(g, 'rack', r);
@@ -2455,6 +2457,13 @@ function booth(x, z, len, lbl) {
   // ceiling: filter frame (open grid so the robots stay visible), plenum boxes along the walls, light strips
   for (let k = 1; k < 4; k++) bx(g, 0.1, 0.1, 8.8, '#9aa3b5', -len / 2 + k * len / 4, 4.45, 0, false);
   for (const s of [-1, 1]) { bx(g, len, 0.5, 1.0, '#c3c9d4', 0, 4.75, s * 3.9, false); mesh(boxG(len * 0.92, 0.06, 0.16), lampMat, 0, 4.2, s * 4.28, g, false); }
+  // filter ceiling: frosted panels between the grid beams (the downdraft source), exhaust stacks on the plenum
+  if (!booth.ceil) booth.ceil = new THREE.MeshLambertMaterial({ color: 0xf4f7fb, transparent: true, opacity: 0.16, depthWrite: false });
+  for (let k = 0; k < 4; k++) mesh(boxG(len / 4 - 0.16, 0.04, 6.6), booth.ceil, -len / 2 + (k + 0.5) * len / 4, 4.47, 0, g, false);
+  for (const ex of [-len / 4, len / 4]) { mesh(cylG(0.32, 1.6, 12), M('#b8bfcc'), ex, 5.8, -3.9, g, false); mesh(cylG(0.38, 0.14, 12), M('#9aa3b5'), ex, 6.6, -3.9, g, false); }
+  bx(g, 1.2, 0.9, 0.9, '#8fa0b8', len / 2 - 0.9, 5.45, 3.9, false); bx(g, 0.5, 0.5, 0.06, '#5a6276', len / 2 - 0.9, 5.45, 4.36, false); // air supply unit
+  // glass tint so the cabin reads as a closed, pressurised box
+  gm.opacity = 0.26; gm.color.set(0xcfe8ff);
   if (lbl) signPlane([lbl], 4.4, 0.7, '#ffffff', '#1f4fd8', g, 0, 4.0, 4.46);
   return g;
 }
@@ -3112,7 +3121,7 @@ const D3 = { rain: null, jets: null, splash: null, cones: [], wet: null, uv: nul
 const WT = { x: 87, z: -0.4, t: 3.0 };
 function nearOverhead(x, y, z) { for (const pa of [PBS.pa, BRIDGE.pa]) { const P = pa.P; for (let i = 1; i < P.length; i++) { const a = P[i - 1], b = P[i]; const y0 = Math.min(a.y, b.y) + 0.1, y1 = Math.max(a.y, b.y) + 1.6; if (y < y0 || y > y1) continue; const dx = b.x - a.x, dz = b.z - a.z, l2 = dx * dx + dz * dz || 1, t = clamp(((x - a.x) * dx + (z - a.z) * dz) / l2, 0, 1); if (Math.hypot(x - a.x - dx * t, z - a.z - dz * t) < 2.7) return true; } } return false; }
 function lightRow(x0, x1, z, y, step = 4.6) {
-  for (let x = x0; x <= x1 + 0.01; x += step) { if (nearOverhead(x, y, z)) continue; bx(scene, 2.6, 0.08, 0.32, '#c3c9d4', x, y + 0.06, z, false); mesh(boxG(2.4, 0.06, 0.24), lampMat, x, y, z, scene, false); for (const d of [-0.95, 0.95]) bx(scene, 0.025, 1.4, 0.025, '#4a5163', x + d, y + 0.8, z, false); LAMPS.push({ x, z, r: 2.6 }); }
+  for (let x = x0; x <= x1 + 0.01; x += step) { if (nearOverhead(x, y, z)) continue; bx(scene, 2.5, 0.07, 0.2, '#dfe4ec', x, y + 0.06, z, false); mesh(boxG(2.4, 0.05, 0.14), lampMat, x, y, z, scene, false); LAMPS.push({ x, z, r: 2.6 }); }
 }
 function fenceRect(x0, z0, x1, z1, h = 1.6) {
   const fm = new THREE.MeshLambertMaterial({ color: 0xf2b705, transparent: true, opacity: 0.32, depthWrite: false });
@@ -3268,7 +3277,13 @@ function buildDetails3() {
     bx(mr, 0.32, 0.4, 0.32, '#3c4250', x, 1.9, 0.1, false);
     const ag = new THREE.Group(); ag.position.set(x, 2.15, 0.1); mr.add(ag); bx(ag, 0.5, 0.06, 0.08, '#f2b705', 0, 0, 0, false); D3.agit.push(ag);
     mesh(cylG(0.05, 5.0, 8), M(c === '#eef0f3' ? '#9aa3b5' : c), x + 0.4, 4.8, 0.5, mr, false);
+    // level gauge on the tank front, circulation pump behind it with the suction line
+    bx(mr, 0.07, 1.1, 0.04, '#eef1f5', x, 0.85, 0.7, false); bx(mr, 0.05, 0.4 + (i % 3) * 0.22, 0.045, c === '#eef0f3' ? '#c3c9d4' : c, x, 0.32 + (0.4 + (i % 3) * 0.22) / 2, 0.71, false);
+    bx(mr, 0.42, 0.32, 0.34, '#3d6fd9', x + 0.35, 0.16, -1.12, false); mesh(cylG(0.11, 0.3, 10), M('#2c313c'), x + 0.35, 0.36, -1.12, mr, false).rotation.z = Math.PI / 2;
+    bx(mr, 0.06, 0.06, 0.62, '#9aa3b5', x + 0.2, 0.25, -0.76, false);
   });
+  // ex-proof flooring: grey antistatic floor with a yellow border, fire extinguisher and a spill kit by the door
+  plane(11.4, 3.0, M('#a9b0bd'), 50, -24.6, 0.026); bx(mr, 0.22, 0.6, 0.22, '#c81e1e', 5.45, 0.3, 1.25, false); bx(mr, 0.6, 0.5, 0.45, '#f2b705', -5.3, 0.25, -1.1, false);
   const mw = makeWorker(); mw.position.set(2.6, 0, 1.15); mw.rotation.y = Math.PI / 2; mr.add(mw); D2.inspectors.push(mw);
   signPlane(['КРАСКОПРИГОТОВИТЕЛЬНОЕ ОТДЕЛЕНИЕ'], 4.8, 0.42, '#1f2b52', '#ffffff', mr, 0, 3.1, 1.62);
   lightRow(18, 54, -35, 5.8, 4.5); lightRow(30, 42, -27.6, 5.6, 4.0);
@@ -9515,7 +9530,7 @@ function saveGame() {
     localStorage.setItem(SAVE_KEY, JSON.stringify(d));
   } catch (e) { }
 }
-const SAVE_VER = 3, GAME_VER = 57;
+const SAVE_VER = 3, GAME_VER = 58;
 // older saves are upgraded in place: every new field has a safe default via the ensure*() helpers
 function migrateSave(d) {
   if (d.v < 3) { d.S.nextCrisisT = undefined; d.S.crisis = null; d.migrated = true; }
