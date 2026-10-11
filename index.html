@@ -1390,7 +1390,7 @@ function buildWorld() {
     const x = SLOT_X(k);
     bx(conv, 0.16, 4.2, 0.16, '#8a93a6', x, 2.1, -10.4, false);
     { const lm = new THREE.MeshLambertMaterial({ color: 0x22c55e, emissive: 0x0a5a26 }); const l = mesh(G('andon', () => new THREE.SphereGeometry(0.24, 14, 10)), lm, x, 4.5, -10.4, conv, false); bx(conv, 0.3, 0.12, 0.3, '#3c4250', x, 4.25, -10.4, false); andon.push(lm); }
-    if (k >= 1 && k <= 9) { const w = makeWorker(); w.position.set(x + 1.5, 0, -11.05); w.rotation.y = -Math.PI / 2; scene.add(w); workers.push(w); }
+    if (k >= 1 && k <= 9) { const w = makeWorker(); dressWorker(w, 'asm'); w.position.set(x + 1.5, 0, -11.05); w.rotation.y = -Math.PI / 2; scene.add(w); workers.push(w); }
     bx(conv, 0.16, 0.16, 1.6, '#8a93a6', x, 4.2, -9.7, false);
     plane(4.2, 0.08, M('#ffffff'), x + 2.3, -5.9, 0.031);
     const sp = signPlane([(k ? k : '0') + '', stNames[k]], 2.4, 1.0, k === 0 || k >= 8 ? '#3c4250' : PARTS[k - 1].color, '#ffffff', conv, x, 3.5, -10.3);
@@ -2965,7 +2965,7 @@ function buildDetails() {
   signPlane(['ПЕРЕДАЧА ПАНЕЛЕЙ', 'тара → кузовной цех'], 2.8, 0.9, '#1f4fd8', '#ffffff', scene, -40.2, 2.6, -24.3);
   const sh = new THREE.Mesh(boxG(5.2, 0.2, 21), new THREE.MeshBasicMaterial({ visible: false })); sh.position.set(-40.2, 0.6, -35); scene.add(sh); setPick(sh, 'press', 0);
   // press: end-of-line worker, crossbar feeders, scrap conveyor & bin, die cart
-  const w = makeWorker(); w.position.set(-43.2, 0, -38.3); w.rotation.y = Math.PI / 2; scene.add(w); DETAIL.pressWorker = w;
+  const w = makeWorker(); dressWorker(w, 'press'); w.position.set(-43.2, 0, -38.3); w.rotation.y = Math.PI / 2; scene.add(w); DETAIL.pressWorker = w;
   plane(1.8, 1.4, lampMat, -42.6, -36, 1.05);
   const PX = [-67, -64, -58, -52, -46, -42.6];
   for (let j = 0; j < 5; j++) { const g = new THREE.Group(); g.position.set(PX[j], 3.2, PRESS_Z); scene.add(g); bx(g, 0.14, 0.14, 2.4, '#f2b705', 0, 0, 0, false); for (const z of [-0.7, 0.7]) bx(g, 0.22, 0.12, 0.22, '#2a2e37', 0, -0.13, z, false); DETAIL.xbars.push(g); }
@@ -3193,14 +3193,14 @@ function buildDetails2() {
   D2.fill = fc;
   fcols.forEach((c, i) => { mesh(cylG(0.38, 1.6, 14), M(c), fx + 0.2 + i * 0.95, 0.8, -13.0, scene, true); bx(scene, 0.3, 0.1, 0.3, '#2a2e37', fx + 0.2 + i * 0.95, 1.65, -13.0, false); });
   signPlane(['ЗАПРАВКА ЖИДКОСТЕЙ'], 2.6, 0.4, '#1f2b52', '#ffffff', scene, fx + 1.1, 2.3, -12.55);
-  const ins = makeWorker(); ins.position.set(SLOT_X(10) - 0.6, 0, -11.1); ins.rotation.y = -Math.PI / 2; scene.add(ins); bx(ins.userData.arms[1], 0.05, 0.32, 0.24, '#1d2735', 0.12, -0.45, 0, false); D2.inspectors.push(ins);
+  const ins = makeWorker(); dressWorker(ins, 'asm'); ins.position.set(SLOT_X(10) - 0.6, 0, -11.1); ins.rotation.y = -Math.PI / 2; scene.add(ins); bx(ins.userData.arms[1], 0.05, 0.32, 0.24, '#1d2735', 0.12, -0.45, 0, false); D2.inspectors.push(ins);
   // pre-assembly benches
   const bench = (cx, label, item) => {
     const g = new THREE.Group(); g.position.set(cx, 0, -15.3); scene.add(g);
     bx(g, 4.2, 0.08, 1.2, '#9aa3b5', 0, 0.95, 0, false); for (const sx of [-2, 2]) for (const sz of [-0.5, 0.5]) bx(g, 0.08, 0.95, 0.08, '#6b7385', sx, 0.47, sz, false);
     bx(g, 4.2, 0.9, 0.06, '#c7d1e8', 0, 1.9, -0.6, false); bx(g, 0.5, 0.3, 0.1, '#fff3c4', 0, 2.5, -0.55, false);
     for (const ox of [-1.1, 1.1]) item(g, ox);
-    for (const ox of [-1.1, 1.1]) { const w = makeWorker(); w.position.set(cx + ox, 0, -16.45); w.rotation.y = -Math.PI / 2; scene.add(w); workers.push(w); }
+    for (const ox of [-1.1, 1.1]) { const w = makeWorker(); dressWorker(w, 'asm'); w.position.set(cx + ox, 0, -16.45); w.rotation.y = -Math.PI / 2; scene.add(w); workers.push(w); }
     groundText(label, cx, -13.9, 0.5, { opacity: 0.55 });
   };
   bench(25.85, 'ПОДСБОРКА ПАНЕЛИ ПРИБОРОВ', (g, ox) => { bx(g, 1.6, 0.35, 0.5, '#2a2e37', ox, 1.17, 0.1, false); const r = mesh(new THREE.TorusGeometry(0.16, 0.035, 6, 16), M('#16181d'), ox + 0.4, 1.45, 0.25, g, false); r.rotation.x = -0.6; });
@@ -3219,7 +3219,7 @@ function buildDetails2() {
     D2.cabinets.push({ m: lmat, k });
   }
   // ---------- paint shop: inspectors in the light tunnel, polishing deck ----------
-  for (const s of [-1, 1]) { const w = makeWorker(); w.position.set(21.2 + s * 0.6, 0, -30 + s * 2.65); w.rotation.y = s > 0 ? Math.PI / 2 : -Math.PI / 2; scene.add(w); D2.inspectors.push(w); }
+  for (const s of [-1, 1]) { const w = makeWorker(); dressWorker(w, 'paint'); w.position.set(21.2 + s * 0.6, 0, -30 + s * 2.65); w.rotation.y = s > 0 ? Math.PI / 2 : -Math.PI / 2; scene.add(w); D2.inspectors.push(w); }
   // (the old polishing deck was replaced by the spot-repair booth next to it)
   // ---------- warehouse docks: lights, chocks, empty pallets ----------
   docks.forEach(d => {
@@ -3429,7 +3429,7 @@ function buildDetails3() {
   D3.wscr = canvasTex(512, 280, () => {});
   const sm = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.1), new THREE.MeshBasicMaterial({ map: D3.wscr })); sm.position.set(X - 2.05, 2.0, Z - 1.6); sm.rotation.y = Math.PI / 2; scene.add(sm);
   bx(scene, 0.06, 1.2, 2.1, '#2a2e37', X - 2.09, 2.0, Z - 1.6, false);
-  const ins = makeWorker(); ins.position.set(X + 1.75, 0, Z + 1.0); ins.rotation.y = Math.PI; scene.add(ins); bx(ins.userData.arms[0], 0.08, 0.32, 0.08, '#3c4250', 0.1, -0.5, 0, false); D3.insp = ins;
+  const ins = makeWorker(); dressWorker(ins, 'qc'); ins.position.set(X + 1.75, 0, Z + 1.0); ins.rotation.y = Math.PI; scene.add(ins); bx(ins.userData.arms[0], 0.08, 0.32, 0.08, '#3c4250', 0.1, -0.5, 0, false); D3.insp = ins;
   const uv = new THREE.Mesh(new THREE.ConeGeometry(0.45, 1.6, 12, 1, true), new THREE.MeshBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.32, depthWrite: false, side: THREE.DoubleSide }));
   uv.rotation.z = -Math.PI / 2; uv.position.set(X + 0.8, 1.15, Z + 1.0); uv.visible = false; scene.add(uv); D3.uv = uv;
   D3.rain = pointsCloud(520, 0x4fa9dc, 0.15, 0.9); D3.jets = pointsCloud(200, 0x7cc4e4, 0.13, 0.85); D3.splash = pointsCloud(90, 0xd9f1ff, 0.09, 0.9);
@@ -3453,7 +3453,7 @@ function buildDetails3() {
   bx(pu, 2.6, 0.95, 0.9, '#c3c9d4', 0, 0.48, 0); bx(pu, 2.6, 0.12, 1.0, '#3c4250', 0, 1.0, 0.05, false);
   for (const sx of [-0.7, 0.7]) { bx(pu, 0.75, 0.5, 0.06, '#2a2e37', sx, 1.45, -0.3, false); bx(pu, 0.66, 0.42, 0.02, '#2a8fc1', sx, 1.45, -0.26, false); }
   bx(pu, 0.25, 0.25, 0.04, '#ef4444', 1.05, 1.08, 0.45, false);
-  const op = makeWorker(); op.position.set(0, 0, 0.95); op.rotation.y = Math.PI / 2; pu.add(op); D2.inspectors.push(op);
+  const op = makeWorker(); dressWorker(op, 'paint'); op.position.set(0, 0, 0.95); op.rotation.y = Math.PI / 2; pu.add(op); D2.inspectors.push(op);
   groundText('ПУЛЬТ ПРЕССОВОЙ ЛИНИИ', -49, -41.2, 0.4, { opacity: 0.6 });
   fenceRect(-70, -40.4, -44, -40.4, 1.6);
   // blank stack and QC table
@@ -3463,7 +3463,7 @@ function buildDetails3() {
   const qt = new THREE.Group(); qt.position.set(-46.5, 0, -31.2); scene.add(qt);
   bx(qt, 2.4, 0.08, 1.3, '#9aa3b5', 0, 0.95, 0, false); for (const sx of [-1.1, 1.1]) for (const sz of [-0.55, 0.55]) bx(qt, 0.08, 0.95, 0.08, '#6b7385', sx, 0.47, sz, false);
   bx(qt, 1.6, 0.05, 1.0, '#aab1bd', 0, 1.02, 0, false); bx(qt, 0.1, 1.4, 0.1, '#3c4250', 1.0, 1.7, -0.5, false); mesh(boxG(1.4, 0.08, 0.3), lampMat, 0.35, 2.4, -0.5, qt, false);
-  const qi = makeWorker(); qi.position.set(0, 0, 1.05); qi.rotation.y = Math.PI / 2; qt.add(qi); D2.inspectors.push(qi);
+  const qi = makeWorker(); dressWorker(qi, 'paint'); qi.position.set(0, 0, 1.05); qi.rotation.y = Math.PI / 2; qt.add(qi); D2.inspectors.push(qi);
   signPlane(['ОТК ШТАМПОВКИ'], 1.8, 0.36, '#1f2b52', '#ffffff', qt, 0, 2.9, -0.48);
   lightRow(-72, -42, -42.2, 6.0, 4.8); lightRow(-72, -42, -30.4, 6.0, 4.8);
   plane(36, 0.9, M('#2f9e5a', { transparent: true, opacity: 0.35 }), -57, -47.0, 0.028);
@@ -3479,14 +3479,14 @@ function buildDetails3() {
   mesh(boxG(4.6, 2.0, 0.04), cm, -30.5, 1.0, -31.2, scene, false); mesh(boxG(0.04, 2.0, 3.6), cm, -32.8, 1.0, -29.4, scene, false);
   const rb_ = makeCar(BARE); rb_.userData.wheels.forEach(w => w.visible = false); rb_.userData.bump.forEach(b => b.visible = false); rb_.userData.lights.forEach(b => b.visible = false); rb_.position.set(-30.5, 0.45, -29.3); scene.add(rb_);
   bx(scene, 3.4, 0.45, 1.6, '#3c4250', -30.5, 0.22, -29.3, false);
-  const ww = makeWorker(); ww.position.set(-30.2, 0, -27.6); ww.rotation.y = -Math.PI / 2; scene.add(ww); bx(ww.userData.arms[0], 0.1, 0.1, 0.5, '#2a2e37', 0.1, -0.5, 0.2, false); D2.polishers.push(ww);
+  const ww = makeWorker(); dressWorker(ww, 'paint'); ww.position.set(-30.2, 0, -27.6); ww.rotation.y = -Math.PI / 2; scene.add(ww); bx(ww.userData.arms[0], 0.1, 0.1, 0.5, '#2a2e37', 0.1, -0.5, 0.2, false); D2.polishers.push(ww);
   D3.spotSparks = pointsCloud(24, 0xffd27a, 0.13, 0.95, THREE.AdditiveBlending);
   groundText('РУЧНАЯ ДОВАРКА', -30.5, -26.6, 0.45, { opacity: 0.6 });
   // white body inspection arch at station 8
   const ix = WELD_X(7);
   for (const s of [-1, 1]) { bx(scene, 0.16, 3.4, 0.16, '#9aa3b5', ix - 1.5, 1.7, WELD_Z + s * 2.2, false); bx(scene, 0.16, 3.4, 0.16, '#9aa3b5', ix + 1.5, 1.7, WELD_Z + s * 2.2, false); mesh(boxG(2.9, 0.1, 0.12), lampMat, ix, 3.3, WELD_Z + s * 2.1, scene, false); }
   for (const dx of [-1.5, 1.5]) mesh(boxG(0.12, 0.1, 4.2), lampMat, ix + dx, 3.4, WELD_Z, scene, false);
-  const wi = makeWorker(); wi.position.set(ix + 0.6, 0, WELD_Z + 3.1); wi.rotation.y = Math.PI / 2; scene.add(wi); D2.inspectors.push(wi);
+  const wi = makeWorker(); dressWorker(wi, 'weld'); wi.position.set(ix + 0.6, 0, WELD_Z + 3.1); wi.rotation.y = Math.PI / 2; scene.add(wi); D2.inspectors.push(wi);
   D3.fumes = pointsCloud(60, 0xb7bdc9, 0.55, 0.22);
   lightRow(-32, 0, -36.6, 5.8, 4.6); lightRow(-32, 0, -29.6, 5.8, 4.6);
   plane(36, 0.9, M('#2f9e5a', { transparent: true, opacity: 0.35 }), -16, -25.3, 0.028);
@@ -3519,7 +3519,7 @@ function buildDetails3() {
   });
   // ex-proof flooring: grey antistatic floor with a yellow border, fire extinguisher and a spill kit by the door
   plane(11.4, 3.0, M('#a9b0bd'), 50, -24.6, 0.026); bx(mr, 0.22, 0.6, 0.22, '#c81e1e', 5.45, 0.3, 1.25, false); bx(mr, 0.6, 0.5, 0.45, '#f2b705', -5.3, 0.25, -1.1, false);
-  const mw = makeWorker(); mw.position.set(2.6, 0, 1.15); mw.rotation.y = Math.PI / 2; mr.add(mw); D2.inspectors.push(mw);
+  const mw = makeWorker(); dressWorker(mw, 'paint'); mw.position.set(2.6, 0, 1.15); mw.rotation.y = Math.PI / 2; mr.add(mw); D2.inspectors.push(mw);
   signPlane(['КРАСКОПРИГОТОВИТЕЛЬНОЕ ОТДЕЛЕНИЕ'], 4.8, 0.42, '#1f2b52', '#ffffff', mr, 0, 3.1, 1.62);
   lightRow(18, 54, -35, 5.8, 4.5); lightRow(30, 42, -27.6, 5.6, 4.0);
   // ---------- assembly: station monitors, walkways, lights ----------
@@ -3632,7 +3632,7 @@ function makeBeacon(x, y, z, post) {
   const b = { g, rot, capM, bm }; D4.beacons.push(b); return b;
 }
 function makeWalker(pts, cart) {
-  const w = makeWorker(); scene.add(w);
+  const w = makeWorker(); dressWorker(w, cart ? 'logist' : 'asm'); scene.add(w);
   if (cart) { const c = new THREE.Group(); c.position.set(0.85, 0, 0); w.add(c); bx(c, 0.9, 0.5, 0.6, '#2f5be0', 0.1, 0.55, 0, false); for (const sz of [-0.25, 0.25]) mesh(cylG(0.08, 0.06, 8), M('#16181d'), 0.1, 0.08, sz, c, false).rotation.x = Math.PI / 2; bx(c, 0.06, 0.6, 0.5, '#3c4250', -0.35, 0.95, 0, false); }
   else bx(w.userData.arms[1], 0.04, 0.3, 0.22, '#eef1f5', 0.12, -0.45, 0, false);
   const pa = mkPath(pts.map(([x, z]) => [x, 0, z]));
@@ -3705,12 +3705,12 @@ function buildDetails4() {
   makeWalker([[15, -13.4], [52, -13.4]], false);
   makeWalker([[52, -13.4], [15, -13.4]], true);
   // maintenance technician for the body shop
-  const t = makeWorker(); t.traverse(o => { if (o.material === M('#2b4fc4')) o.material = M('#ff7a1a'); }); scene.add(t);
+  const t = makeWorker(); dressWorker(t, 'mech'); scene.add(t);
   bx(t, 0.5, 0.3, 0.3, '#c81e1e', 0.1, 0.4, 0.42, false);
   D4.tech = { w: t, home: { x: 2.6, z: -26.4 }, pos: { x: 2.6, z: -26.4 }, route: [], target: null, ph: 0, rid: null };
   t.position.set(2.6, 0, -26.4);
   // south-side line workers shuttling from racks to the car
-  for (const k of [1, 2, 6]) { const w = makeWorker(); w.position.set(SLOT_X(k), 0, -4.9); w.rotation.y = Math.PI / 2; scene.add(w); D4.southW.push({ k, w, x: SLOT_X(k), z: -4.9 }); }
+  for (const k of [1, 2, 6]) { const w = makeWorker(); dressWorker(w, 'asm'); w.position.set(SLOT_X(k), 0, -4.9); w.rotation.y = Math.PI / 2; scene.add(w); D4.southW.push({ k, w, x: SLOT_X(k), z: -4.9 }); }
   // extra pedestrians
   for (let i = 0; i < 4; i++) {
     const p0 = D2.peds[0]; if (!p0) break;
@@ -3769,7 +3769,7 @@ function postStandsSync() {
       const bar = new THREE.Mesh(G('pbar', () => new THREE.PlaneGeometry(1, 0.16)), POSTV.bar[k]); bar.rotation.x = -Math.PI / 2; bar.position.set(0, 0.034, -11.8); bar.userData.noBatch = true; g.add(bar);
       const pl = new THREE.Mesh(G('pnum', () => new THREE.PlaneGeometry(0.9, 0.45)), postNumMat(1)); pl.rotation.x = -Math.PI / 2; pl.position.set(0, 0.036, -11.0); pl.userData.noBatch = true; g.add(pl);
       TXT.list.push({ m: pl, h: 0.31, ground: true, on: true });
-      const w = makeWorker(); w.rotation.y = -Math.PI / 2; scene.add(w);
+      const w = makeWorker(); dressWorker(w, 'asm'); w.rotation.y = -Math.PI / 2; scene.add(w);
       Z.push({ g, bar, pl, w });
     }
     for (let j = 0; j < Z.length; j++) {
@@ -4126,17 +4126,53 @@ function updateDetails5(dt, sdt) {
 }
 // ----- role uniforms -----
 const ROLES = {
-  asm: { b: '#2b4fc4', s: '#f2b705', h: '#f2b705' }, weld: { b: '#6b5440', s: '#f2b705', h: '#3c4250' }, paint: { b: '#eef1f5', s: '#9ec5ff', h: '#eef1f5', l: '#dfe4ec' },
-  press: { b: '#4a505e', s: '#ff7a1a', h: '#ff7a1a' }, driver: { b: '#1f2430', s: '#ff7a1a', h: null }, qc: { b: '#2f9e5a', s: '#eef1f5', h: '#eef1f5' },
-  mech: { b: '#ff7a1a', s: '#3c4250', h: '#eef1f5' }, office: { b: '#9ec5ff', s: '#9ec5ff', h: null, l: '#3c4250' }, office2: { b: '#f4f6fb', s: '#f4f6fb', h: null, l: '#2a2e37' },
+  // every shop has its own set: shirt (b), shoulder band (s), helmet (h), trousers (l), chest/back badge (icon)
+  asm: { b: '#2b4fc4', s: '#f2b705', h: '#f2b705', l: '#1b2a63', icon: 'car' },
+  weld: { b: '#7a4a2b', s: '#ffd23f', h: '#2a2e37', l: '#3b2a20', icon: 'spark' },
+  paint: { b: '#eef1f5', s: '#38bdf8', h: '#eef1f5', l: '#dfe4ec', icon: 'drop' },
+  press: { b: '#5a6070', s: '#ff7a1a', h: '#ff7a1a', l: '#2c313c', icon: 'press' },
+  driver: { b: '#1f2430', s: '#ff7a1a', h: null, icon: null },
+  qc: { b: '#16a34a', s: '#eef1f5', h: '#16a34a', l: '#14532d', icon: 'check' },
+  mech: { b: '#ff7a1a', s: '#2a2e37', h: '#eef1f5', l: '#4a3626', icon: 'wrench' },
+  office: { b: '#9ec5ff', s: '#9ec5ff', h: null, l: '#3c4250' }, office2: { b: '#f4f6fb', s: '#f4f6fb', h: null, l: '#2a2e37' },
   hr: { b: '#7c3aed', s: '#7c3aed', h: null, l: '#2a2e37' }, boss: { b: '#2a2e37', s: '#2a2e37', h: null, l: '#2a2e37' },
-  engine: { b: '#1f6f8b', s: '#f2b705', h: '#eef1f5' }, gear: { b: '#5b6b2f', s: '#f2b705', h: '#f2b705' }, interior: { b: '#8b5a3c', s: '#eef1f5', h: '#eef1f5' },
-  logist: { b: '#f2b705', s: '#ff7a1a', h: '#ff7a1a' }, eng: { b: '#2b4fc4', s: '#eef1f5', h: '#eef1f5' },
+  engine: { b: '#0f8b8d', s: '#f2b705', h: '#eef1f5', l: '#0b3d3e', icon: 'piston' },
+  gear: { b: '#6b7f2a', s: '#eef1f5', h: '#f2b705', l: '#2f3a14', icon: 'cog' },
+  interior: { b: '#a23b8c', s: '#eef1f5', h: '#eef1f5', l: '#4a1d42', icon: 'seat' },
+  logist: { b: '#f2d000', s: '#d1d5db', h: '#d62828', l: '#3c4250', icon: 'box' },
+  eng: { b: '#1e3a5f', s: '#eef1f5', h: '#eef1f5', l: '#142238', icon: 'chip' },
 };
+// pictogram badges (language-neutral) drawn on the chest and the back of a shop uniform
+const UNI_MAT = {};
+function uniBadge(role) {
+  if (UNI_MAT[role]) return UNI_MAT[role];
+  const R = ROLES[role], ic = R.icon; if (!ic) return null;
+  const dark = '#1d2230', bg = (R.s && R.s !== R.b) ? R.s : '#eef1f5';
+  const tex = canvasTex(64, 64, (g) => {
+    g.fillStyle = bg; g.beginPath(); g.arc(32, 32, 29, 0, 7); g.fill(); g.strokeStyle = dark; g.lineWidth = 3; g.stroke();
+    g.fillStyle = dark; g.strokeStyle = dark; g.lineWidth = 5; g.lineCap = 'round'; g.lineJoin = 'round';
+    if (ic === 'car') { g.fillRect(14, 30, 36, 10); g.beginPath(); g.moveTo(21, 30); g.lineTo(27, 21); g.lineTo(41, 21); g.lineTo(46, 30); g.fill(); g.fillStyle = bg; g.beginPath(); g.arc(23, 41, 5, 0, 7); g.arc(41, 41, 5, 0, 7); g.fill(); g.fillStyle = dark; g.beginPath(); g.arc(23, 41, 3, 0, 7); g.arc(41, 41, 3, 0, 7); g.fill(); }
+    else if (ic === 'spark') { g.beginPath(); for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2, r = i % 2 ? 7 : 22; g.lineTo(32 + Math.cos(a) * r, 32 + Math.sin(a) * r); } g.closePath(); g.fill(); }
+    else if (ic === 'drop') { g.beginPath(); g.moveTo(32, 12); g.bezierCurveTo(46, 30, 48, 38, 40, 46); g.bezierCurveTo(34, 52, 28, 52, 24, 46); g.bezierCurveTo(16, 38, 18, 30, 32, 12); g.fill(); }
+    else if (ic === 'press') { g.fillRect(16, 14, 32, 8); g.fillRect(28, 22, 8, 14); g.beginPath(); g.moveTo(20, 36); g.lineTo(44, 36); g.lineTo(32, 48); g.fill(); g.fillRect(14, 50, 36, 4); }
+    else if (ic === 'check') { g.beginPath(); g.moveTo(16, 33); g.lineTo(27, 44); g.lineTo(48, 20); g.stroke(); }
+    else if (ic === 'wrench') { g.beginPath(); g.moveTo(20, 46); g.lineTo(40, 26); g.stroke(); g.beginPath(); g.arc(42, 22, 9, 0, 7); g.fill(); g.fillStyle = bg; g.fillRect(40, 10, 5, 11); }
+    else if (ic === 'piston') { g.fillRect(22, 14, 20, 22); g.fillStyle = bg; g.fillRect(22, 20, 20, 3); g.fillRect(22, 26, 20, 3); g.fillStyle = dark; g.fillRect(29, 36, 6, 12); g.beginPath(); g.arc(32, 50, 5, 0, 7); g.fill(); }
+    else if (ic === 'cog') { for (let i = 0; i < 8; i++) { g.save(); g.translate(32, 32); g.rotate(i / 8 * Math.PI * 2); g.fillRect(-4, -22, 8, 10); g.restore(); } g.beginPath(); g.arc(32, 32, 14, 0, 7); g.fill(); g.fillStyle = bg; g.beginPath(); g.arc(32, 32, 6, 0, 7); g.fill(); }
+    else if (ic === 'seat') { g.fillRect(20, 14, 10, 28); g.fillRect(20, 36, 26, 8); g.fillRect(40, 44, 6, 8); g.fillRect(20, 44, 6, 8); }
+    else if (ic === 'box') { g.fillRect(16, 22, 32, 24); g.fillStyle = bg; g.fillRect(30, 22, 4, 24); g.fillRect(16, 32, 32, 3); }
+    else if (ic === 'chip') { g.fillRect(20, 20, 24, 24); g.fillStyle = bg; g.fillRect(26, 26, 12, 12); g.fillStyle = dark; for (let i = 0; i < 3; i++) { g.fillRect(24 + i * 8, 13, 3, 7); g.fillRect(24 + i * 8, 44, 3, 7); g.fillRect(13, 24 + i * 8, 7, 3); g.fillRect(44, 24 + i * 8, 7, 3); } }
+  });
+  return UNI_MAT[role] = new THREE.MeshBasicMaterial({ map: tex, transparent: true });
+}
 const CIV = ['#c0392b', '#2f855a', '#e07b24', '#5d7fb8', '#7d8798', '#b3262e', '#d8cfbf'];
 function dressWorker(w, role) {
   const R = role === 'cand' ? { b: pick(CIV), s: null, h: null, l: '#3d5a80' } : ROLES[role] || ROLES.asm;
   w.userData.role = role;
+  if (!w.userData.badged && role !== 'cand' && R.icon && w.userData.body) {
+    const bm = uniBadge(role); w.userData.badged = true;
+    if (bm) for (const sgn of [1, -1]) { const pl = new THREE.Mesh(G('uniBadge', () => new THREE.PlaneGeometry(0.24, 0.24)), bm); pl.position.set(sgn * 0.17, 0.33, 0); pl.rotation.y = sgn * Math.PI / 2; pl.userData.noBatch = true; w.userData.body.add(pl); }
+  }
   w.traverse(o => {
     if (!o.isMesh) return; const p = o.geometry.parameters || {};
     if (o.material === M('#2b4fc4')) o.material = M(R.b);
@@ -6224,7 +6260,7 @@ function updateTrainees(dt, ev) {
   const on = ev && ev.key === 'training';
   if (on && !TRAINEES.active && TRAINEES.done !== S.shift) {
     TRAINEES.active = true; TRAINEES.grp = trainingGroups();
-    TRAINEES.ppl.forEach((t, i) => { const k = TRAINEES.grp[i < 8 ? 0 : 1], R = ROLES[STAFF_DEF[k].role]; crowdRecolor(t.o, R.b, R.h || '#3a2a20'); t.o.vis = true; t.o.x = OUTX; t.o.z = 20 + (i % 8) * 0.9; t.seat = CAMP.train[i < 8 ? 0 : 1][(i % 8) * 2 % 16]; t.path = routeBetween({ x: t.o.x, z: t.o.z, chain: [] }, t.seat); t.pi = 1; t.dir = 'in'; t.delay = (i % 8) * 1.2; });
+    TRAINEES.ppl.forEach((t, i) => { const k = TRAINEES.grp[i < 8 ? 0 : 1], R = ROLES[STAFF_DEF[k].role]; crowdRecolor(t.o, R.b, R.h || '#3a2a20', R.l); t.o.vis = true; t.o.x = OUTX; t.o.z = 20 + (i % 8) * 0.9; t.seat = CAMP.train[i < 8 ? 0 : 1][(i % 8) * 2 % 16]; t.path = routeBetween({ x: t.o.x, z: t.o.z, chain: [] }, t.seat); t.pi = 1; t.dir = 'in'; t.delay = (i % 8) * 1.2; });
   }
   if (!on && TRAINEES.active) {
     TRAINEES.active = false; TRAINEES.done = S.shift;
@@ -6238,8 +6274,9 @@ function updateTrainees(dt, ev) {
     if (t.path) { t.o.path = t.path; t.o.pi = t.pi; if (crowdStep(t.o, dt, 1.4)) { t.path = null; if (t.dir === 'in') { t.o.x = t.seat.x; t.o.z = t.seat.z; t.o.ry = t.seat.ry; t.o.pose = 'sit'; t.o.act = 'listen'; } else t.o.vis = false; } t.pi = t.o.pi; }
   }
 }
-function crowdRecolor(o, shirt, helmet) {
+function crowdRecolor(o, shirt, helmet, legs) {
   const P = CROWD.parts, c = new THREE.Color(), i = o.i; o.shirt = shirt; o.helmet = helmet;
+  if (legs) { P.legL.setColorAt(i, c.set(legs)); P.legR.setColorAt(i, c.set(legs)); P.legL.instanceColor.needsUpdate = P.legR.instanceColor.needsUpdate = true; o.legs = legs; }
   P.torso.setColorAt(i, c.set(shirt)); P.armL.setColorAt(i, c.set(shirt)); P.armR.setColorAt(i, c.set(shirt)); P.hair.setColorAt(i, c.set(helmet));
   for (const k of ['torso', 'armL', 'armR', 'hair']) P[k].instanceColor.needsUpdate = true;
 }
@@ -6541,12 +6578,12 @@ function alight() {
   // shop workers of the next shift arrive in the last 25 minutes of the shift and the first 15 of the new one
   if (shiftStartSoon > 455 || shiftStartSoon < 15) {
     const free = CAMP.shiftPool.filter(p => p.st === 'off').slice(0, 10);
-    free.forEach((p, i) => { const k = pick(['asm', 'asm', 'asm', 'paint', 'weld', 'qc']), R = ROLES[STAFF_DEF[k].role]; crowdRecolor(p.o, R.b, R.h || '#3a2a20'); p.o.vis = true; p.o.x = STOP.x - 3 + (i % 5) * 0.6; p.o.z = STOP.z + 2.0 + Math.floor(i / 5) * 0.5; p.o.pi = 0; p.path = [...TO_KPP, ...KPP_TO_SHOP.asm]; p.st = 'in'; p.delay = i * 0.7; });
+    free.forEach((p, i) => { const k = pick(['asm', 'asm', 'asm', 'paint', 'weld', 'qc']), R = ROLES[STAFF_DEF[k].role]; crowdRecolor(p.o, R.b, R.h || '#3a2a20', R.l); p.o.vis = true; p.o.x = STOP.x - 3 + (i % 5) * 0.6; p.o.z = STOP.z + 2.0 + Math.floor(i / 5) * 0.5; p.o.pi = 0; p.path = [...TO_KPP, ...KPP_TO_SHOP.asm]; p.st = 'in'; p.delay = i * 0.7; });
   }
   // the outgoing shift goes home
   if (shiftStartSoon < 25 && shiftStartSoon >= 0) {
     const free = CAMP.shiftPool.filter(p => p.st === 'off').slice(0, 8);
-    free.forEach((p, i) => { const R = ROLES[pick(['asm', 'paint', 'weld', 'engine', 'interior'])]; crowdRecolor(p.o, R.b, R.h || '#3a2a20'); p.o.vis = true; p.o.x = 57.2; p.o.z = 2.6; p.o.pi = 0; p.path = [...KPP_TO_SHOP.asm].reverse().concat(TO_KPP.slice().reverse(), [{ x: STOP.wx + rand(-1.6, 1.6), z: STOP.wz + rand(-0.3, 0.3) }]); p.st = 'out'; p.delay = i * 1.5; });
+    free.forEach((p, i) => { const R = ROLES[pick(['asm', 'paint', 'weld', 'engine', 'interior'])]; crowdRecolor(p.o, R.b, R.h || '#3a2a20', R.l); p.o.vis = true; p.o.x = 57.2; p.o.z = 2.6; p.o.pi = 0; p.path = [...KPP_TO_SHOP.asm].reverse().concat(TO_KPP.slice().reverse(), [{ x: STOP.wx + rand(-1.6, 1.6), z: STOP.wz + rand(-0.3, 0.3) }]); p.st = 'out'; p.delay = i * 1.5; });
   }
 }
 function board() {
@@ -10030,7 +10067,7 @@ function saveGame() {
     localStorage.setItem(SAVE_KEY, JSON.stringify(d));
   } catch (e) { }
 }
-const SAVE_VER = 3, GAME_VER = 67;
+const SAVE_VER = 3, GAME_VER = 68;
 // older saves are upgraded in place: every new field has a safe default via the ensure*() helpers
 function migrateSave(d) {
   if (d.v < 3) { d.S.nextCrisisT = undefined; d.S.crisis = null; d.migrated = true; }
