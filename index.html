@@ -2352,7 +2352,7 @@ function geoBody() {
   const g = geoS(), hp = Math.min(...pmRobots('weld').map(r => r.hp === undefined ? 90 : r.hp), 100);
   g.drift = Math.min(1, g.drift + 0.0028 * (1 + (1 - hp / 100) * 2.5)); g.n++;
   if (g.drift > 0.6 && !g.warned) { g.warned = true; toast('Геометрия кузовов уходит: Cpk ' + geoCpk().toFixed(2) + ' — пора перекалибровать кондукторы', 'warn'); }
-  if (g.drift > 0.5 && Math.random() < (g.drift - 0.5) * 0.3) { g.rej++; S.st.geoRej = (S.st.geoRej || 0) + 1; S.money -= 250000; S.st.prodCost += 250000; return true; }
+  if (g.drift > 0.5 && Math.random() < (g.drift - 0.5) * 0.3) { g.rej++; S.st.geoRej = (S.st.geoRej || 0) + 1; S.money -= 400000; S.st.prodCost += 400000; return true; }
   return false;
 }
 function geoCalibrate() {
@@ -8710,7 +8710,7 @@ function pmHTML(shop) {
 const IQC = { vis: null, cageT: 0, cagePart: 0 };
 const IQC_MODES = { none: { n: 'Без контроля', det: 0, cost: 0 }, sample: { n: 'Выборочный', det: 0.6, cost: 20000 }, full: { n: 'Сплошной', det: 0.95, cost: 60000 } };
 // each supplier has its own quality level (stable per supplier name)
-function supBadP(name) { let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) % 997; return 0.025 + (h % 7) * 0.012; }
+function supBadP(name) { let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) % 997; return 0.05 + (h % 7) * 0.02; }
 function supS(name) { S.sup = S.sup || {}; return S.sup[name] = S.sup[name] || { n: 0, bad: 0, caught: 0, slipped: 0 }; }
 function iqcInspect(tr) {
   const P = PARTS[tr.part]; if (!P || P.direct || tr.iqc) return; tr.iqc = true;
@@ -8735,7 +8735,7 @@ function iqcDefect(c) {
     if (!(S.badLot[p] > 0)) continue;
     S.badLot[p] -= PARTS[p].perCar;
     if (Math.random() < 0.4) { const d = 'Брак комплектующих: ' + PARTS[p].short.toLowerCase(); QA_POST[d] = p + 1; S.st.supDefects = (S.st.supDefects || 0) + 1; return d; }
-    if (c && c.supEsc == null && Math.random() < 0.22 * (S.iqc === 'none' ? 1.4 : 1)) c.supEsc = p; // the OTK missed it: the car leaves with a supplier defect
+    if (c && c.supEsc == null && Math.random() < 0.4 * (S.iqc === 'none' ? 1.4 : 1)) c.supEsc = p; // the OTK missed it: the car leaves with a supplier defect
   }
   return '';
 }
@@ -9923,7 +9923,7 @@ function saveGame() {
     localStorage.setItem(SAVE_KEY, JSON.stringify(d));
   } catch (e) { }
 }
-const SAVE_VER = 3, GAME_VER = 64;
+const SAVE_VER = 3, GAME_VER = 65;
 // older saves are upgraded in place: every new field has a safe default via the ensure*() helpers
 function migrateSave(d) {
   if (d.v < 3) { d.S.nextCrisisT = undefined; d.S.crisis = null; d.migrated = true; }
