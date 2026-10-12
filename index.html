@@ -4532,7 +4532,7 @@ function updateShopMovers(dt) {
   }
 }
 function updateCompShopsVis(dt) {
-  const now = performance.now() / 1000;
+  const now = performance.now() / 1000; flowUpdate(dt);
   for (const sh of Object.values(CSH)) {
     const v = CV[sh.id]; if (!v) continue; const run = sh.st === 'run' && dt > 0;
     sh.ph += dt * (run ? 1 : 0);
@@ -7629,9 +7629,32 @@ function updateMachining(dt, dtMin) {
   // the CMM decides at ОП60 whether the block is in tolerance
   const c = MCH.slots[5]; if (c && Math.random() < mchRejectP()) { c.bad = true; c.why = pick(['диаметр цилиндра', 'шероховатость зеркала', 'соосность постелей', 'плоскостность']); }
 }
+// ================= v80: visible material flow between stations (carts carrying blocks / gear sets / crates) =================
+const FLOW = { cars: [], pool: [] };
+const FLOW_R = {
+  eng:     { pts: [[-17.0, 53.5], [-19.6, 53.5], [-19.6, 55.0]], col: '#8f99ab', sz: [0.55, 0.3, 0.42] },
+  gearOut: { pts: [[11.7, 57.3], [11.7, 60.0], [1.6, 60.0], [1.0, 60.7]], col: '#545a66', sz: [0.5, 0.26, 0.4] },
+  hob:     { pts: [[12.6, 51.4], [9.8, 51.4], [7.0, 51.4], [7.0, 52.3]], col: '#d5dae2', sz: [0.5, 0.26, 0.4] },
+  toFurn:  { pts: [[7.0, 54.0], [5.6, 55.4], [4.9, 57.7]], col: '#d5dae2', sz: [0.7, 0.3, 0.5] },
+  fromFurn:{ pts: [[4.9, 57.7], [5.6, 59.4], [11.7, 59.4], [11.7, 57.3]], col: '#3f444f', sz: [0.7, 0.3, 0.5] }
+};
+function flowSpawn(kind) {
+  if (!CV.engine || FLOW.cars.length >= 8) return; const R = FLOW_R[kind]; if (!R) return;
+  const g = FLOW.pool.pop() || (() => { const g = new THREE.Group(); g.userData.noBatch = true; bx(g, 0.9, 0.16, 0.7, '#2b3040', 0, 0.2, 0, false); bx(g, 0.9, 0.04, 0.12, '#f2b705', 0, 0.3, 0.3, false); for (const sx of [-0.35, 0.35]) for (const sz of [-0.28, 0.28]) { const w = mesh(cylG(0.09, 0.08, 8), M('#111'), sx, 0.09, sz, g, false); w.rotation.x = Math.PI / 2; } g.userData.load = bx(g, 0.5, 0.3, 0.4, '#8f99ab', 0, 0.45, 0, false); scene.add(g); return g; })();
+  const L = g.userData.load; L.material = M(R.col); L.scale.set(R.sz[0] / 0.5, R.sz[1] / 0.3, R.sz[2] / 0.4); L.position.y = 0.28 + R.sz[1] / 2; g.visible = true;
+  g.position.set(R.pts[0][0], 0, R.pts[0][1]); FLOW.cars.push({ g, pts: R.pts, i: 1, hold: 0.6 });
+}
+function flowUpdate(dt) {
+  for (let k = FLOW.cars.length - 1; k >= 0; k--) {
+    const c = FLOW.cars[k]; if (c.hold > 0) { c.hold -= dt; continue; }
+    const t = c.pts[c.i], dx = t[0] - c.g.position.x, dz = t[1] - c.g.position.z, d = Math.hypot(dx, dz), st = 2.6 * dt;
+    if (d > 0.01) { c.g.position.x += dx / d * Math.min(d, st); c.g.position.z += dz / d * Math.min(d, st); c.g.rotation.y = angLerp(c.g.rotation.y, Math.atan2(-dz, dx), 0.3); }
+    if (d <= st) { c.i++; if (c.i >= c.pts.length) { c.g.visible = false; FLOW.pool.push(c.g); FLOW.cars.splice(k, 1); } }
+  }
+}
 // engine assembly takes a machined block instead of a raw casting
 const engBlockOK = () => mchState().buf >= 1;
-function engTakeBlock() { mchState().buf--; }
+function engTakeBlock() { mchState().buf--; flowSpawn('eng'); }
 function buildMachiningLine() {
   const E = CSH.engine, g = new THREE.Group(); scene.add(g);
   // roller transfer line under the stations
@@ -7907,9 +7930,9 @@ const HT_MODES = { full: { n: 'Только полные садки', min: HT_BA
 const HT = { st: 'idle', t: 0, n: 0, hobT: 0, hob: false, temp: 880, vis: null, last: '', why: '' };
 function htS() { if (!S.ht) S.ht = { soft: 3, hard: 8, mode: 'flex', cycles: 0 }; return S.ht; }
 const gearOK = () => htS().hard >= 1;
-function gearTake() { htS().hard--; }
+function gearTake() { htS().hard--; flowSpawn('gearOut'); }
 function htStartBatch(h) {
-  const n = Math.min(HT_BATCH, h.soft); h.soft -= n; HT.n = n; HT.st = 'load'; HT.t = HT_PH.load;
+  const n = Math.min(HT_BATCH, h.soft); h.soft -= n; HT.n = n; HT.st = 'load'; HT.t = HT_PH.load; flowSpawn('toFurn');
   const gas = 45000 + n * 3000; S.money -= gas; S.st.prodCost += gas; S.st.htGas = (S.st.htGas || 0) + gas; S.st.htBatches = (S.st.htBatches || 0) + 1; S.st.htSets = (S.st.htSets || 0) + n;
   if (n < HT_BATCH) journal.unshift({ t: S.t, text: `Термообработка: неполная садка ${n}/${HT_BATCH} — КПП ждут шестерни (газ ${fmtMoney(gas)})`, kind: 'info' });
 }
@@ -7920,7 +7943,7 @@ function updateHeatTreat(dt, dtMin) {
   if (sh.st === 'stop' && h.hard < 1) S.st.htWait = (S.st.htWait || 0) + dtMin;
   if (h.soft < HT_SOFT_CAP && h.soft + h.hard + (HT.st !== 'idle' ? HT.n : 0) < HT_SOFT_CAP + HT_HARD_CAP && S.lineSide[sh.raw] >= 1) {
     HT.hob = true; HT.hobT += dtMin * staffF('gear') * toolK('gear') * brokenK('gear') * airK();
-    if (HT.hobT >= compTakt() * 0.8) { HT.hobT = 0; S.lineSide[sh.raw] -= 1; h.soft++; }
+    if (HT.hobT >= compTakt() * 0.8) { HT.hobT = 0; S.lineSide[sh.raw] -= 1; h.soft++; flowSpawn('hob'); }
   }
   // furnace cycle
   const tgt = HT.st === 'heat' || HT.st === 'load' ? 930 : HT.st === 'quench' ? 860 : 880;
@@ -7939,7 +7962,7 @@ function updateHeatTreat(dt, dtMin) {
     // hardness test (Rockwell) on every set of the batch
     const pBad = 0.012 + Math.max(0, (S.wear ? S.wear.gear : 0.3) - 0.6) * 0.08; let bad = 0;
     for (let i = 0; i < HT.n; i++) if (Math.random() < pBad) bad++;
-    const ok = HT.n - bad; h.hard = Math.min(HT_HARD_CAP + 4, h.hard + ok); h.cycles++;
+    const ok = HT.n - bad; h.hard = Math.min(HT_HARD_CAP + 4, h.hard + ok); h.cycles++; flowSpawn('fromFurn');
     if (bad) { const c = Math.round(sh.cost * 0.3 * bad); S.money -= c; S.st.prodCost += c; S.st.htScrap = (S.st.htScrap || 0) + bad; journal.unshift({ t: S.t, text: `Контроль твёрдости: ${bad} ${plural(bad, 'комплект', 'комплекта', 'комплектов')} шестерён ниже 58 HRC — в брак (${fmtMoney(c)})`, kind: 'warn' }); }
     HT.st = 'idle'; HT.n = 0;
   }
@@ -10201,7 +10224,7 @@ function saveGame() {
     localStorage.setItem(SAVE_KEY, JSON.stringify(d));
   } catch (e) { }
 }
-const SAVE_VER = 3, GAME_VER = 79;
+const SAVE_VER = 3, GAME_VER = 80;
 // older saves are upgraded in place: every new field has a safe default via the ensure*() helpers
 function migrateSave(d) {
   if (d.v < 3) { d.S.nextCrisisT = undefined; d.S.crisis = null; d.migrated = true; }
